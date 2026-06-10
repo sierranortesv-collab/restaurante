@@ -888,18 +888,20 @@
             document.getElementById('ai-panel-combos').style.display = 'none';
             document.getElementById('ai-loading-state').style.display = 'block';
             try {
-                // Le pedimos al Chero que nos recomiende con texto normal y limpio
-                const systemPrompt = `Eres El Chero de la Sierra. Recomienda menús usando este catálogo: ${JSON.stringify(MENU_ITEMS)}. Explica tus sugerencias con mucha jerga salvadoreña tradicional, alegre y atenta. No uses formatos JSON complicados, solo texto plano bien dinámico.`;
+                // Le pedimos al Chero que nos recomiende con texto normal y sabroso
+                const systemPrompt = `Eres El Chero de la Sierra. Recomienda combinaciones y menús del restaurante usando este catálogo: ${JSON.stringify(MENU_ITEMS)}. Explica tus sugerencias de forma muy animada, usando mucha jerga salvadoreña tradicional, alegre y atenta. Responde con texto normal fluido, sin usar formatos JSON ni códigos extraños.`;
                 
-                // Ponemos "false" al final para recibir texto normal sin errores de conversión
+                // Forzamos "false" para que fetchGeminiFree nos entregue el texto directo sin procesar JSON
                 const resText = await fetchGeminiFree(promptInput, systemPrompt, false);
                 
+                // Mostramos el texto en la pantalla y cambiamos las negritas de markdown por etiquetas HTML
                 document.getElementById('ai-response-text').innerHTML = resText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                // Ocultamos temporalmente el botón de sumar todo el combo para evitar clavo de IDs
+                
+                // Ocultamos temporalmente el botón de sumar el combo para evitar errores de conversión
                 document.getElementById('ai-action-footer').style.display = 'none'; 
             } catch (e) {
                 console.error(e);
-                document.getElementById('ai-response-text').innerHTML = "¡Puchica, se cortó la señal del comal! Pídete unas pupusitas revueltas calientes.";
+                document.getElementById('ai-response-text').innerHTML = "¡Puchica, se cortó la señal del comal! Pídete unas pupusitas revueltas calientes en lo que vuelve el sistema.";
                 document.getElementById('ai-action-footer').style.display = 'none';
             }
             document.getElementById('ai-loading-state').style.display = 'none';
