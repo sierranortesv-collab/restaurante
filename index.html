@@ -880,7 +880,7 @@
                 
                 const resText = await fetchGeminiFree(promptInput, systemPrompt, false);
                 
-                // Limpiamos cualquier rastro de formato markdown que la IA a veces mete por error
+                // Limpiamos cualquier formato markdown extra que la IA pueda meter por error
                 const cleanJson = resText.replace(/```json/g, '').replace(/```/g, '').trim();
                 const parsed = JSON.parse(cleanJson);
                 
