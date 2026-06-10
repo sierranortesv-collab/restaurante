@@ -1912,33 +1912,44 @@
             document.getElementById('ai-result-state').style.display = 'none';
         }
 
-        async function callGeminiAPI(payload) {
-            // 🔑 AQUÍ VA TU API KEY CONFIGURADA DIRECTAMENTE:
+        async function fetchGeminiFree(prompt, systemInstruction, isJson = false) {
+            // 🔑 Tu API Key puesta directamente en el motor correcto
             const apiKey = "AQ.Ab8RN6KKw2H6uIm9SeJ8__8FoAXJyuvmaeRxVHRcJYyMM4RP7w"; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
+            // Estructuramos el paquete con el prompt y la instrucción de sistema que pide tu menú
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            if (isJson) {
+                payload.generationConfig = { responseMimeType: "application/json" };
+            }
+
             let delay = 1000;
-            for (let i = 0; i < 3; i++) { // Max 3 retries
+            for (let i = 0; i < 3; i++) { // Max 3 intentos si se satura
                 try {
-                    const response = await fetch(apiUrl, {
+                    const response = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
                     
                     if (response.ok) {
-                        return await response.json();
+                        const data = await response.json();
+                        // Devolvemos el texto limpio que los botones esperan leer
+                        return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
                     }
                     
                     if (response.status === 429) {
-                        // Wait and retry
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
                         continue;
                     }
                     throw new Error(`HTTP Error Status: ${response.status}`);
                 } catch (error) {
-                    if (i === 2) throw error; // If last try, propagate error
+                    if (i === 2) throw error;
                     await new Promise(resolve => setTimeout(resolve, delay));
                     delay *= 2;
                 }
