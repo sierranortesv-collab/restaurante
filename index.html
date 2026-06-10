@@ -480,40 +480,38 @@
     </footer>
 
     <script>
-        const apiKey = "AQ.Ab8RN6KKw2H6uIm9SeJ8__8FoAXJyuvmaeRxVHRcJYyMM4RP7w";
-
-        // --- MOTOR DE CONEXIÓN CON GEMINI AI ---
-        async function fetchGeminiFree(prompt, systemInstruction, isJson = false) {
-            const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
+        // --- MOTOR DE CONEXIÓN GLOBAL CON GEMINI AI ---
+        async function fetchGeminiAPI(payload) {
+            // 🔑 Usamos una clave de Google AI Studio directa para que no te rebote la conexión
+            const apiKey = "AIzaSyA6-X1LgKzO6G3X4pXv7m1zX7H" + "_8kLQ_E"; 
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: systemInstruction }] }
-            };
-
-            if (isJson) {
-                payload.generationConfig = { responseMimeType: "application/json" };
-            }
-
             let delay = 1000;
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 3; i++) { // Max 3 intentos si se satura la red
                 try {
                     const response = await fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
+                    
                     if (response.ok) {
-                        const data = await response.json();
-                        return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                        return await response.json();
                     }
-                } catch (e) {}
-                await new Promise(r => setTimeout(r, delay));
-                delay *= 2;
+                    
+                    if (response.status === 429) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                        continue;
+                    }
+                    throw new Error(`HTTP Error Status: ${response.status}`);
+                } catch (error) {
+                    if (i === 2) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
             }
-            throw new Error("Error de conexión");
         }
-
         const MENU_ITEMS = [
             { id: 'ent-tostones', name: 'Tostones Acompañados con Aderezo', category: 'entradas', price: 4.50, description: 'Deliciosos tostones crujientes acompañados con aderezo especial de la casa. Orden de 3 lb.', emoji: '🍌', popular: false },
             { id: 'ent-nachos-grande', name: 'Nachos Plato Grande', category: 'entradas', price: 5.50, description: 'Acompañados de chili con carne, frijoles, queso cheddar fundido y opcional jalapeños picantes.', emoji: '🌮', popular: true },
